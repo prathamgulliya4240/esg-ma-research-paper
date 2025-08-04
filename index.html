@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Report: ESG Valuation Premiums in M&A</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <!-- 
+        Chosen Palette: "Warm Neutral & Professional Accent" - A custom palette inspired by the prompt's guidance for a calm, harmonious feel.
+        Base: #F8F7F4 (Light Beige)
+        Text: #333333 (Dark Gray)
+        Primary Accent: #4A5568 (Slate Gray)
+        Secondary Accent: #A0AEC0 (Light Slate)
+        Highlight: #C0A080 (Muted Gold)
+    -->
+    <!-- 
+        Application Structure Plan: The SPA is designed as a narrative journey, starting with the main conclusion and then progressively revealing the evidence.
+        1.  **Hero Section:** Immediately presents the core finding (the 10-15% premium) to hook the user.
+        2.  **Project Overview:** A new section with a tabbed interface to present the high-level project details: its strategic value, research objectives, and methodology. This provides the foundational context for the rest of the data.
+        3.  **Comparative Analysis:** An interactive dashboard-like section allowing users to toggle between India and Global data, making the comparison direct and engaging.
+        4.  **Sector Deep Dive:** Uses a tabbed interface to let users explore specific Indian sectors, including a new section for the Tata Power case study. This prevents information overload and allows focused discovery.
+        5.  **M&A Lifecycle Diagram:** A clear, linear flowchart built with HTML/CSS to illustrate the integration of ESG into the dealmaking process, with an added note on post-merger performance.
+        This top-down structure was chosen to cater to a busy professional audience, delivering the key message upfront and then allowing for deeper, self-directed exploration of the supporting data and project specifics.
+    -->
+    <!-- 
+        Visualization & Content Choices:
+        - Report Info: 10-15% ESG premium in India. -> Goal: Inform. -> Viz: Large dynamic stat. -> Interaction: None. -> Justification: High impact, immediate communication of the core finding. -> Method: HTML/CSS.
+        - Report Info: Drivers of ESG in M&A (Regulatory, Investor, etc.). -> Goal: Organize/Inform. -> Viz: Icon-driven card layout. -> Interaction: None. -> Justification: Breaks down complex drivers into easily digestible thematic chunks. -> Method: HTML/CSS with Unicode icons.
+        - Report Info: India vs. Global premium comparison. -> Goal: Compare. -> Viz: Interactive Bar Chart. -> Interaction: Buttons to update chart data. -> Justification: Allows direct, user-controlled comparison, making the data more memorable. -> Library: Chart.js (Canvas).
+        - Report Info: Premiums in specific Indian sectors. -> Goal: Compare/Inform. -> Viz: Donut Charts within a tabbed interface. -> Interaction: Clicking tabs to reveal different sector charts and a new case study. -> Justification: Organizes detailed data cleanly, preventing a cluttered layout. -> Library: Chart.js (Canvas).
+        - Report Info: ESG integration into M&A process. -> Goal: Organize. -> Viz: Horizontal flowchart. -> Interaction: None. -> Justification: Clearly illustrates a linear process in a visually structured way. -> Method: HTML/CSS (Flexbox).
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F7F4;
+            color: #333333;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-button.active {
+            border-bottom-color: #C0A080;
+            color: #4A5568;
+            font-weight: 700;
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background-color: #4A5568;
+            color: #F8F7F4;
+        }
+        .kpi-value {
+            font-size: 4rem;
+            font-weight: 900;
+            color: #4A5568;
+        }
+        .flow-step {
+            background-color: #FFFFFF;
+            border: 2px solid #A0AEC0;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+            flex: 1;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .flow-arrow {
+            color: #A0AEC0;
+            font-size: 2rem;
+            font-weight: bold;
+            align-self: center;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-center items-center h-16">
+                <div class="flex space-x-8 text-lg font-semibold text-gray-500">
+                    <a href="#hero" class="nav-button">Home</a>
+                    <a href="#overview" class="nav-button">Overview</a>
+                    <a href="#analysis" class="nav-button">Analysis</a>
+                    <a href="#sectors" class="nav-button">Sectors</a>
+                    <a href="#playbook" class="nav-button">Playbook</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto p-4 md:p-8">
+
+        <section id="hero" class="text-center py-16 md:py-24">
+            <h1 class="text-4xl md:text-6xl font-black text-[#4A5568] leading-tight">The ESG Valuation Premium</h1>
+            <p class="mt-4 text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto">A deep dive into how Environmental, Social, and Governance factors are fundamentally reshaping M&A dealmaking and commanding tangible valuation premiums in India and across the globe.</p>
+            <div class="mt-12 bg-white rounded-xl shadow-lg p-8 inline-block border border-gray-200">
+                <h2 class="text-2xl font-bold text-gray-700">Observed Premium in Indian ESG-Driven Deals</h2>
+                <p class="kpi-value mt-2 text-[#C0A080]">10-15%</p>
+                <p class="mt-2 text-gray-500">Source: Report analysis of recent market data.</p>
+            </div>
+        </section>
+
+        <hr class="my-16 border-gray-200">
+
+        <section id="overview" class="py-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-[#4A5568]">Research Project Overview</h2>
+                <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">This project investigates the tangible financial impact of ESG in M&A. This section provides an overview of the project's strategic value, key research questions, and the methodology used to derive the findings.</p>
+            </div>
+            <div class="bg-white p-4 md:p-8 rounded-lg shadow-lg border border-gray-200">
+                <div class="flex flex-wrap justify-center gap-4 mb-6">
+                    <button data-tab="why" class="overview-tab tab-button active py-2 px-4 rounded-md font-semibold">Project Value</button>
+                    <button data-tab="objectives" class="overview-tab tab-button py-2 px-4 rounded-md font-semibold">Objectives</button>
+                    <button data-tab="methodology" class="overview-tab tab-button py-2 px-4 rounded-md font-semibold">Methodology</button>
+                </div>
+                <div id="why-tab" class="overview-content">
+                    <h3 class="text-2xl font-bold mb-4 text-[#4A5568]">Why This Project Is Important</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-600 ml-4">
+                        <li><strong>Investment Banking Relevance:</strong> It focuses on M&A strategy and valuation modeling, which are core skills for investment banking roles.</li>
+                        <li><strong>Differentiator:</strong> It goes beyond basic DCF and LBO models to explore strategic premiums and non-financial drivers of value, offering a unique perspective.</li>
+                        <li><strong>ESG Trend:</strong> The project is highly topical, addressing how the growing ESG trend is shaping modern dealmaking and corporate strategy.</li>
+                        <li><strong>Publishable Quality:</strong> The research fits journals in finance, ESG policy, and international business, demonstrating a high level of rigor.</li>
+                    </ul>
+                </div>
+                <div id="objectives-tab" class="hidden overview-content">
+                    <h3 class="text-2xl font-bold mb-4 text-[#4A5568]">Core Research Objectives</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-600 ml-4">
+                        <li>Do acquirers pay valuation premiums in ESG-related M&A deals?</li>
+                        <li>Is there a difference in premium in Indian vs. global markets?</li>
+                        <li>Does ESG alignment lead to post-merger performance improvements?</li>
+                        <li>What sectors (e.g., energy, tech, manufacturing) show the largest premiums?</li>
+                    </ul>
+                </div>
+                <div id="methodology-tab" class="hidden overview-content">
+                    <h3 class="text-2xl font-bold mb-4 text-[#4A5568]">Research Methodology</h3>
+                    <p class="mb-4 text-gray-600">The study used a rigorous, multi-faceted approach to analyze the data from a dataset of ESG-driven M&A deals in India and globally.</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-600 ml-4">
+                        <li><strong>Dataset & Variables:</strong> The dataset was sourced from providers like <strong>Refinitiv, Bloomberg, and PitchBook</strong>. We defined ESG relevance based on acquirer/target’s ESG ratings or SDG-aligned sectors. Key variables included the **Deal Premium** (Offer Price − Target Stock Price), ESG Score, Target/Acquirer Sector, Deal Size, and broader Market Conditions.</li>
+                        <li><strong>Models:</strong> We employed **OLS Regression** to analyze the relationship between the premium and ESG scores. **Difference-in-Differences** was used to study post-merger performance, and an **Event Study** was performed to measure short-term returns post-announcement.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-16 border-gray-200">
+
+        <section id="analysis" class="py-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-[#4A5568]">Comparative Analysis: India vs. Global Premiums</h2>
+                <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">This section provides an interactive comparison of the valuation premiums observed in ESG-driven M&A deals. While a global premium exists, India's proactive regulatory environment has created a market where this premium is more pronounced. Use the buttons to toggle the data view.</p>
+            </div>
+            <div class="bg-white p-4 md:p-8 rounded-lg shadow-lg border border-gray-200">
+                <div class="text-center mb-6">
+                    <button id="showIndia" class="tab-button active py-2 px-4 rounded-md font-semibold">Indian Market</button>
+                    <button id="showGlobal" class="tab-button py-2 px-4 rounded-md font-semibold">Global Market</button>
+                    <button id="showComparison" class="tab-button py-2 px-4 rounded-md font-semibold">Side-by-Side</button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="premiumChart"></canvas>
+                </div>
+                <div id="chart-context" class="mt-6 text-center text-gray-600 max-w-2xl mx-auto"></div>
+            </div>
+        </section>
+
+        <hr class="my-16 border-gray-200">
+
+        <section id="sectors" class="py-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-[#4A5568]">Indian Sector Deep Dive</h2>
+                <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">The ESG premium is not uniform across all industries. In India, certain sectors demonstrate particularly high premiums, driven by specific environmental, social, or governance factors. Select a sector below to explore its unique ESG value drivers.</p>
+            </div>
+            <div class="bg-white p-4 md:p-8 rounded-lg shadow-lg border border-gray-200">
+                <div class="flex flex-wrap justify-center gap-4 mb-6">
+                    <button data-sector="energy" class="sector-tab tab-button active py-2 px-4 rounded-md font-semibold">Renewable Energy</button>
+                    <button data-sector="tech" class="sector-tab tab-button py-2 px-4 rounded-md font-semibold">Technology</button>
+                    <button data-sector="consumer" class="sector-tab tab-button py-2 px-4 rounded-md font-semibold">Consumer Goods</button>
+                    <button data-sector="case-study" class="sector-tab tab-button py-2 px-4 rounded-md font-semibold">Case Study</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 items-center gap-8">
+                    <div id="sector-chart-container" class="md:col-span-1 hidden">
+                        <div class="chart-container h-64 md:h-80">
+                            <canvas id="sectorChart"></canvas>
+                        </div>
+                    </div>
+                    <div id="sector-context" class="md:col-span-3 text-gray-600 text-lg">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-16 border-gray-200">
+
+        <section id="playbook" class="py-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-[#4A5568]">The ESG-Integrated M&A Playbook</h2>
+                <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">Successful modern M&A requires embedding ESG considerations across the entire deal lifecycle. It has evolved from a final check to a continuous thread influencing strategy, valuation, and long-term value capture.</p>
+            </div>
+            <div class="flex flex-col md:flex-row items-stretch justify-between gap-4 md:gap-0">
+                <div class="flow-step">
+                    <h3 class="font-bold text-lg">1. Deal Sourcing & Origination</h3>
+                    <p class="mt-2 text-sm">Proactively screen targets for ESG alignment and undervalued ESG assets, moving beyond purely financial metrics.</p>
+                </div>
+                <div class="flow-arrow mx-4 hidden md:flex items-center">›</div>
+                <div class="flow-arrow my-2 flex md:hidden items-center justify-center">↓</div>
+                <div class="flow-step">
+                    <h3 class="font-bold text-lg">2. Valuation & Due Diligence</h3>
+                    <p class="mt-2 text-sm">Quantify ESG risks and opportunities. Conduct rigorous ESG due diligence covering climate risk, labor practices, and governance.</p>
+                </div>
+                 <div class="flow-arrow mx-4 hidden md:flex items-center">›</div>
+                 <div class="flow-arrow my-2 flex md:hidden items-center justify-center">↓</div>
+                <div class="flow-step">
+                    <h3 class="font-bold text-lg">3. Deal Structuring & Financing</h3>
+                    <p class="mt-2 text-sm">Advise on and structure ESG-linked financing. Use ESG findings to inform deal terms, warranties, and indemnities.</p>
+                </div>
+                 <div class="flow-arrow mx-4 hidden md:flex items-center">›</div>
+                 <div class="flow-arrow my-2 flex md:hidden items-center justify-center">↓</div>
+                <div class="flow-step">
+                    <h3 class="font-bold text-lg">4. Post-Merger Integration</h3>
+                    <p class="mt-2 text-sm">Develop plans to capture ESG synergies, harmonize reporting, and enhance the combined entity's overall ESG performance, which leads to measurable improvements in post-merger performance.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white mt-16 py-8 border-t border-gray-200">
+        <div class="container mx-auto text-center text-gray-500">
+            <p>This interactive application synthesizes findings from the research report: "Valuation Premiums in ESG-Driven M&A".</p>
+            <p class="text-sm mt-2">Built with HTML, Tailwind CSS, and Chart.js. Confirmed: No SVG or Mermaid JS used.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const premiumChartCtx = document.getElementById('premiumChart').getContext('2d');
+            let premiumChart;
+
+            const chartData = {
+                india: {
+                    labels: ['Indian ESG Deals'],
+                    datasets: [{
+                        label: 'Valuation Premium (%)',
+                        data: [12.5],
+                        backgroundColor: ['#C0A080'],
+                        borderColor: ['#4A5568'],
+                        borderWidth: 2,
+                        maxBarThickness: 100,
+                    }]
+                },
+                global: {
+                    labels: ['Global ESG Deals'],
+                    datasets: [{
+                        label: 'Valuation Premium (%)',
+                        data: [10],
+                        backgroundColor: ['#A0AEC0'],
+                        borderColor: ['#4A5568'],
+                        borderWidth: 2,
+                        maxBarThickness: 100,
+                    }]
+                },
+                comparison: {
+                    labels: ['Indian Market', 'Global Market'],
+                    datasets: [{
+                        label: 'Valuation Premium (%)',
+                        data: [12.5, 10],
+                        backgroundColor: ['#C0A080', '#A0AEC0'],
+                        borderColor: ['#4A5568', '#4A5568'],
+                        borderWidth: 2,
+                        maxBarThickness: 100,
+                    }]
+                }
+            };
+            
+            const chartContextText = {
+                 india: "In the Indian market, M&A deals with strong ESG credentials command a significant average valuation premium of 10-15%. This is driven by a proactive regulatory environment and growing investor awareness. The analysis of **pre- vs. post-COVID** data showed a noticeable acceleration in this trend, with premiums widening in the post-COVID period as sustainability became a more urgent strategic priority.",
+                 global: "Globally, executives and investment professionals are willing to pay a median premium of 10% for companies with a positive ESG record, indicating a clear, worldwide trend.",
+                 comparison: "The side-by-side comparison highlights India's leading position. The higher premium in India suggests that its specific market and regulatory dynamics create a more potent environment for ESG-driven value creation. This is a fascinating signal for market sentiment."
+            };
+
+            function createOrUpdateChart(data, context) {
+                document.getElementById('chart-context').innerHTML = context;
+                if (premiumChart) {
+                    premiumChart.destroy();
+                }
+                premiumChart = new Chart(premiumChartCtx, {
+                    type: 'bar',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(tooltipItems) {
+                                        const item = tooltipItems[0];
+                                        let label = item.chart.data.labels[item.dataIndex];
+                                        return Array.isArray(label) ? label.join(' ') : label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                suggestedMax: 16,
+                                title: {
+                                    display: true,
+                                    text: 'Valuation Premium (%)',
+                                    font: { size: 14, weight: 'bold' }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            document.getElementById('showIndia').addEventListener('click', (e) => {
+                createOrUpdateChart(chartData.india, chartContextText.india);
+                updateActiveButton(e.target, '#analysis');
+            });
+            document.getElementById('showGlobal').addEventListener('click', (e) => {
+                createOrUpdateChart(chartData.global, chartContextText.global);
+                updateActiveButton(e.target, '#analysis');
+            });
+            document.getElementById('showComparison').addEventListener('click', (e) => {
+                createOrUpdateChart(chartData.comparison, chartContextText.comparison);
+                updateActiveButton(e.target, '#analysis');
+            });
+            
+            function updateActiveButton(activeBtn, parentSelector) {
+                document.querySelectorAll(`${parentSelector} .tab-button`).forEach(btn => btn.classList.remove('active'));
+                activeBtn.classList.add('active');
+            }
+
+            createOrUpdateChart(chartData.india, chartContextText.india);
+
+            const sectorChartCtx = document.getElementById('sectorChart').getContext('2d');
+            let sectorChart;
+            const sectorChartContainer = document.getElementById('sector-chart-container');
+
+            const sectorData = {
+                energy: {
+                    data: [14, 86],
+                    context: "<strong>Key Driver: Energy Transition.</strong> The renewable energy sector commands the highest premiums. This is fueled by India's national goal of 500 GW of non-fossil fuel capacity by 2030 and strategic 'brown-to-green' acquisitions. Strong ESG credentials unlock access to green financing and align with long-term policy, making these targets highly valuable."
+                },
+                tech: {
+                    data: [12, 88],
+                    context: "<strong>Key Driver: Governance & Data Privacy.</strong> In the tech sector, premiums are driven by strong governance (the 'G' in ESG). Acquirers pay more for companies with robust data privacy practices, diverse leadership, and ethical AI frameworks. These factors mitigate regulatory risk and build crucial customer trust."
+                },
+                consumer: {
+                    data: [10, 90],
+                    context: "<strong>Key Driver: Sustainable Supply Chains & Consumer Trust.</strong> With 65% of Indian consumers considering sustainability in purchases, companies are acquiring brands with strong sustainable sourcing and eco-friendly packaging. This directly translates to market share gains and brand loyalty, justifying the M&A premium."
+                },
+                'case-study': {
+                    data: null,
+                    context: `
+                        <h3 class="text-2xl font-bold mb-2 text-[#4A5568]">Case Study: Tata Power’s Clean Energy Expansion</h3>
+                        <p><strong>Talking Points:</strong> "This project taught me how ESG narratives drive tangible premiums in M&A, which investment bankers must quantify."</p>
+                        <p class="mt-4">Tata Power serves as a prime example of a company using M&A to accelerate its ESG strategy. By acquiring renewable energy assets, Tata Power has not only diversified its portfolio but also significantly advanced its environmental goals, creating tangible value for shareholders. This strategic approach highlights how a focus on ESG can translate into a competitive advantage in a highly regulated and rapidly evolving market.</p>
+                        <p class="mt-4"><strong>Insight:</strong> "While ESG is often seen as a compliance area, we explored its influence on financial deal terms." The premium paid in this acquisition was a direct result of the long-term value created by strengthening the company's ESG profile, demonstrating that ESG is not just a compliance cost but a genuine driver of financial value.</p>
+                    `
+                }
+            };
+
+            function createOrUpdateSectorChart(sector) {
+                document.getElementById('sector-context').innerHTML = sectorData[sector].context;
+                if (sectorChart) {
+                    sectorChart.destroy();
+                }
+                
+                if (sectorData[sector].data) {
+                    sectorChartContainer.classList.remove('hidden');
+                    document.getElementById('sector-context').classList.remove('md:col-span-3');
+                    document.getElementById('sector-context').classList.add('md:col-span-2');
+                    sectorChart = new Chart(sectorChartCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['ESG Premium', 'Base Valuation'],
+                            datasets: [{
+                                data: sectorData[sector].data,
+                                backgroundColor: ['#C0A080', '#e2e8f0'],
+                                borderColor: '#FFFFFF',
+                                borderWidth: 4,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '70%',
+                            plugins: {
+                                legend: { display: true, position: 'bottom' },
+                                tooltip: {
+                                    callbacks: {
+                                        title: function(tooltipItems) {
+                                            const item = tooltipItems[0];
+                                            let label = item.chart.data.labels[item.dataIndex];
+                                            return Array.isArray(label) ? label.join(' ') : label;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    sectorChartContainer.classList.add('hidden');
+                    document.getElementById('sector-context').classList.remove('md:col-span-2');
+                    document.getElementById('sector-context').classList.add('md:col-span-3');
+                }
+            }
+            
+            document.querySelectorAll('.sector-tab').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const sector = e.target.dataset.sector;
+                    createOrUpdateSectorChart(sector);
+                    updateActiveButton(e.target, '#sectors');
+                });
+            });
+
+            createOrUpdateSectorChart('energy');
+            
+            document.querySelectorAll('.overview-tab').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const tab = e.target.dataset.tab;
+                    document.querySelectorAll('.overview-content').forEach(content => content.classList.add('hidden'));
+                    document.getElementById(`${tab}-tab`).classList.remove('hidden');
+                    updateActiveButton(e.target, '#overview');
+                });
+            });
+            
+            const navLinks = document.querySelectorAll('.nav-button');
+            const sections = document.querySelectorAll('section');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 80) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${current}`) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>
